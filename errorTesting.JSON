@@ -18,8 +18,8 @@
         ],
         "out": [
             {
-                "x": 1160,
-                "y": 60,
+                "x": 1180,
+                "y": 120,
                 "wires": [
                     {
                         "id": "6878035fce2eb5f7",
@@ -139,18 +139,18 @@
         "type": "function",
         "z": "6d97bfecb9bdd1c5",
         "name": "",
-        "func": "flow.set(\"constmsg\", msg);\n\nmsg.payload = msg.statusCode;\n\n\nreturn msg;",
+        "func": "\n\nmsg.payload = msg.statusCode;\n\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 360,
-        "y": 300,
+        "x": 440,
+        "y": 220,
         "wires": [
             [
-                "8b6606b6616c2174",
-                "3310e53d1e933f82"
+                "3310e53d1e933f82",
+                "8b6606b6616c2174"
             ]
         ]
     },
@@ -252,11 +252,12 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 180,
-        "y": 320,
+        "x": 140,
+        "y": 220,
         "wires": [
             [
-                "9079108fe4862242"
+                "9079108fe4862242",
+                "40d6fd40a104ac8b"
             ]
         ]
     },
@@ -269,7 +270,7 @@
             "8b6606b6616c2174"
         ],
         "x": 500,
-        "y": 120,
+        "y": 80,
         "wires": [
             [
                 "6878035fce2eb5f7"
@@ -281,7 +282,7 @@
         "type": "function",
         "z": "6d97bfecb9bdd1c5",
         "name": "",
-        "func": "\nif(msg.status.text !== \"closed\"){\n    msg = flow.get(\"constmsg\");\n    return msg;\n}\n",
+        "func": "\nif(msg.status.text !== \"closed\"){\n    msg.topic = \"control\";\n    msg.payload = \"open\";\n    return msg;\n} else {\n    msg.topic = \"control\";\n    msg.payload = \"close\";\n}\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -291,6 +292,25 @@
         "y": 120,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "40d6fd40a104ac8b",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "flow.set(\"constmsg\", msg);\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 160,
+        "wires": [
+            [
+                "6878035fce2eb5f7"
+            ]
         ]
     },
     {
@@ -307,7 +327,7 @@
         "proxy": "",
         "authType": "",
         "senderr": false,
-        "x": 1090,
+        "x": 1110,
         "y": 120,
         "wires": [
             [
@@ -319,6 +339,7 @@
         "id": "11167f67.5d5031",
         "type": "inject",
         "z": "bcaf575c2a11e950",
+        "d": true,
         "name": "cars on craigslist",
         "props": [
             {
@@ -372,32 +393,15 @@
         ]
     },
     {
-        "id": "1ef9987c.956c78",
-        "type": "debug",
-        "z": "bcaf575c2a11e950",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1510,
-        "y": 80,
-        "wires": []
-    },
-    {
         "id": "db7a16be4636cae9",
         "type": "subflow:6d97bfecb9bdd1c5",
         "z": "bcaf575c2a11e950",
         "name": "",
-        "x": 1280,
-        "y": 120,
+        "x": 1260,
+        "y": 40,
         "wires": [
             [
-                "1ef9987c.956c78"
+                "b36aa30.3a7276"
             ],
             [
                 "ad51d4eb2e333c16"
@@ -417,8 +421,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1530,
-        "y": 200,
+        "x": 1450,
+        "y": 60,
         "wires": []
     }
 ]
