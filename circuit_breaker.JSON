@@ -1,0 +1,292 @@
+[
+    {
+        "id": "6d97bfecb9bdd1c5",
+        "type": "subflow",
+        "name": "Subflow 2",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 160,
+                "wires": [
+                    {
+                        "id": "61ccb7f90955d8b6"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1160,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "6878035fce2eb5f7",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1260,
+                "y": 420,
+                "wires": [
+                    {
+                        "id": "951033c0675fd99f",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "failThreshold",
+                "type": "num",
+                "value": "15"
+            },
+            {
+                "name": "cooldownTime",
+                "type": "num",
+                "value": "30"
+            },
+            {
+                "name": "errorForCheck",
+                "type": "num",
+                "value": "403"
+            }
+        ],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "node-red/status.svg"
+    },
+    {
+        "id": "951033c0675fd99f",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "let outputOne;\nlet outputTwo;\n\nlet failPercentage = flow.get(\"failCounter\") * 100 / (flow.get(\"failCounter\") + flow.get(\"successCounter\"));\n\nmsg.topic = \"control\";\n\nif(flow.get(\"failThreshold\") <= failPercentage){\n    msg.payload = \"close\";\n    msg[\"timeout\"] = flow.get(\"cooldownTime\");\n    outputOne = msg;\n} else {\n    msg.payload = failPercentage;\n    outputTwo = msg;\n}\n\n\nreturn [outputOne, outputTwo];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 400,
+        "wires": [
+            [
+                "8b6606b6616c2174",
+                "7bbd9b79508e189b"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "df12392c02b31385",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "\nflow.set(\"successCounter\", 0);\nflow.set(\"failCounter\", 0);\n\nflow.set(\"leadingTime\", 0);\n\n\n\nif(flow.get(\"errorForCheck\") === msg.statusCode){\n    if(flow.get(\"failCounter\")){\n        flow.set(\"failCounter\", flow.get(\"failCounter\") + 1)\n    } else {\n        flow.set(\"failCounter\", 1);\n    }\n} else {\n    if(flow.get(\"successCounter\")){\n        flow.set(\"successCounter\", flow.get(\"successCounter\") + 1);\n    } else {\n        flow.set(\"successCounter\", 1);\n    }\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 300,
+        "wires": [
+            [
+                "951033c0675fd99f"
+            ]
+        ]
+    },
+    {
+        "id": "8b6606b6616c2174",
+        "type": "q-gate",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "controlTopic": "control",
+        "defaultState": "queueing",
+        "openCmd": "open",
+        "closeCmd": "close",
+        "toggleCmd": "toggle",
+        "queueCmd": "queue",
+        "defaultCmd": "default",
+        "triggerCmd": "trigger",
+        "flushCmd": "flush",
+        "resetCmd": "reset",
+        "peekCmd": "peek",
+        "dropCmd": "drop",
+        "statusCmd": "status",
+        "maxQueueLength": "100",
+        "keepNewest": false,
+        "qToggle": true,
+        "persist": false,
+        "storeName": "memory",
+        "x": 790,
+        "y": 240,
+        "wires": [
+            [
+                "df12392c02b31385"
+            ]
+        ]
+    },
+    {
+        "id": "9079108fe4862242",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "flow.set(\"constPayload\", msg.payload);\n\nmsg.payload = msg.statusCode;\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 300,
+        "wires": [
+            [
+                "8b6606b6616c2174",
+                "3310e53d1e933f82"
+            ]
+        ]
+    },
+    {
+        "id": "3310e53d1e933f82",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "const d = new Date();\n\n\nif(!flow.get(\"leadingTime\")){\n    flow.set(\"leadingTime\", d.getTime());\n}\n\n\nif(d.getTime() - flow.get(\"leadingTime\") >= 5000) {\n    msg.topic = \"control\";\n    flow.set(\"leadingTime\", d.getTime());\n    msg.payload = \"flush\";\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 300,
+        "wires": [
+            [
+                "8b6606b6616c2174"
+            ]
+        ]
+    },
+    {
+        "id": "7bbd9b79508e189b",
+        "type": "mytimeout",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "outtopic": "control",
+        "outsafe": "5",
+        "outwarning": "Warning",
+        "outunsafe": "off",
+        "warning": "0",
+        "timer": "10",
+        "debug": false,
+        "ndebug": false,
+        "ignoreCase": false,
+        "repeat": false,
+        "again": false,
+        "x": 470,
+        "y": 520,
+        "wires": [
+            [
+                "628be6b2e32967c4"
+            ],
+            [
+                "628be6b2e32967c4"
+            ]
+        ]
+    },
+    {
+        "id": "628be6b2e32967c4",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "\nflow.set(\"leadingTime\", 0);\n\n\nif(msg.payload === 1) {\n    msg.topic = \"control\";\n    msg.payload = \"queue\";\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 520,
+        "wires": [
+            [
+                "8b6606b6616c2174"
+            ]
+        ]
+    },
+    {
+        "id": "61ccb7f90955d8b6",
+        "type": "change",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "cooldownTime",
+                "pt": "flow",
+                "to": "cooldownTime",
+                "tot": "env"
+            },
+            {
+                "t": "set",
+                "p": "failThreshold",
+                "pt": "flow",
+                "to": "failThreshold",
+                "tot": "env"
+            },
+            {
+                "t": "set",
+                "p": "errorForCheck",
+                "pt": "flow",
+                "to": "errorForCheck",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 180,
+        "y": 320,
+        "wires": [
+            [
+                "9079108fe4862242"
+            ]
+        ]
+    },
+    {
+        "id": "45604fc6fd8c3ed7",
+        "type": "status",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "scope": [
+            "8b6606b6616c2174"
+        ],
+        "x": 500,
+        "y": 120,
+        "wires": [
+            [
+                "6878035fce2eb5f7"
+            ]
+        ]
+    },
+    {
+        "id": "6878035fce2eb5f7",
+        "type": "function",
+        "z": "6d97bfecb9bdd1c5",
+        "name": "",
+        "func": "\nif(msg.status.text !== \"closed\"){\n    msg.payload = flow.get(\"constPayload\");\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    }
+]
