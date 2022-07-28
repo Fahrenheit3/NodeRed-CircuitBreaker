@@ -34,6 +34,10 @@
                     {
                         "id": "951033c0675fd99f",
                         "port": 1
+                    },
+                    {
+                        "id": "951033c0675fd99f",
+                        "port": 0
                     }
                 ]
             }
@@ -64,7 +68,7 @@
         "type": "function",
         "z": "6d97bfecb9bdd1c5",
         "name": "",
-        "func": "let outputOne;\nlet outputTwo;\n\nlet failPercentage = flow.get(\"failCounter\") * 100 / (flow.get(\"failCounter\") + flow.get(\"successCounter\"));\n\nmsg.topic = \"control\";\n\nif(flow.get(\"failThreshold\") <= failPercentage){\n    msg.payload = \"close\";\n    msg[\"timeout\"] = flow.get(\"cooldownTime\");\n    outputOne = msg;\n} else {\n    msg.payload = failPercentage;\n    outputTwo = msg;\n}\n\n\nreturn [outputOne, outputTwo];",
+        "func": "let outputOne;\nlet outputTwo;\n\nlet failPercentage = flow.get(\"failCounter\") * 100 / (flow.get(\"failCounter\") + flow.get(\"successCounter\"));\n\nmsg.topic = \"control\";\n\nif(flow.get(\"failThreshold\") <= failPercentage){\n    msg.payload = \"close\";\n    msg[\"timeout\"] = flow.get(\"cooldownTime\");\n    msg.failPercentage = failPercentage;\n    outputOne = msg;\n} else {\n    msg.failPercentage = failPercentage;\n    outputTwo = msg;\n}\n\n\nreturn [outputOne, outputTwo];",
         "outputs": 2,
         "noerr": 0,
         "initialize": "",
@@ -135,7 +139,7 @@
         "type": "function",
         "z": "6d97bfecb9bdd1c5",
         "name": "",
-        "func": "flow.set(\"constPayload\", msg.payload);\n\nmsg.payload = msg.statusCode;\n\n\nreturn msg;",
+        "func": "flow.set(\"constmsg\", msg);\n\nmsg.payload = msg.statusCode;\n\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -277,7 +281,7 @@
         "type": "function",
         "z": "6d97bfecb9bdd1c5",
         "name": "",
-        "func": "\nif(msg.status.text !== \"closed\"){\n    msg.payload = flow.get(\"constPayload\");\n    return msg;\n}\n",
+        "func": "\nif(msg.status.text !== \"closed\"){\n    msg = flow.get(\"constmsg\");\n    return msg;\n}\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -287,6 +291,22 @@
         "y": 120,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "db7a16be4636cae9",
+        "type": "subflow:6d97bfecb9bdd1c5",
+        "z": "bcaf575c2a11e950",
+        "name": "",
+        "x": 1280,
+        "y": 120,
+        "wires": [
+            [
+                "1ef9987c.956c78"
+            ],
+            [
+                "ad51d4eb2e333c16"
+            ]
         ]
     }
 ]
