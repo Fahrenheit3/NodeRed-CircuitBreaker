@@ -1,48 +1,28 @@
 [
     {
-        "id": "6a18b14ac692588d",
+        "id": "684766f6b176af89",
         "type": "subflow",
-        "name": "Subflow 10",
+        "name": "Subflow 7",
         "info": "",
         "category": "",
-        "in": [
-            {
-                "x": 140,
-                "y": 460,
-                "wires": [
-                    {
-                        "id": "0a43a581d998a447"
-                    }
-                ]
-            }
-        ],
+        "in": [],
         "out": [
             {
-                "x": 840,
+                "x": 1020,
                 "y": 80,
                 "wires": [
                     {
-                        "id": "8ca815e0b0c4fa49",
+                        "id": "68511cac815a3cd3",
                         "port": 0
                     }
                 ]
             },
             {
-                "x": 720,
-                "y": 180,
+                "x": 1070,
+                "y": 200,
                 "wires": [
                     {
-                        "id": "017813ac4a6da350",
-                        "port": 0
-                    }
-                ]
-            },
-            {
-                "x": 680,
-                "y": 320,
-                "wires": [
-                    {
-                        "id": "017813ac4a6da350",
+                        "id": "373fac3af2b6fa87",
                         "port": 1
                     }
                 ]
@@ -51,248 +31,47 @@
         "env": [
             {
                 "name": "cooldownTime",
-                "type": "env",
-                "value": "30"
+                "type": "num",
+                "value": "20"
             },
             {
                 "name": "failThreshold",
-                "type": "env",
+                "type": "num",
                 "value": "15"
             }
         ],
         "meta": {},
-        "color": "#DDAA99"
+        "color": "#3FADB5",
+        "outputLabels": [
+            "Flow Controller",
+            "Status Check"
+        ],
+        "icon": "node-red-contrib-queue-gate/queue.png"
     },
     {
-        "id": "017813ac4a6da350",
+        "id": "373fac3af2b6fa87",
         "type": "function",
-        "z": "6a18b14ac692588d",
+        "z": "684766f6b176af89",
         "name": "calculate stats through flow variables",
-        "func": "\nmsg.failPercentage = msg.failCounter * 100 / (msg.failCounter + msg.successCounter);\n\nlet msg1;\nlet msg2;\n\nif(flow.get(\"failThreshold\") <= msg.failPercentage){\n    msg.topic = \"control\";\n    msg.payload = \"close\";\n    msg[\"timeout\"] = flow.get(\"cooldownTime\");\n    msg1 = msg;\n} else {\n    msg.topic = \"control\";\n    msg.payload = \"open\";\n    msg2 = msg;\n}\n\n\nreturn [msg1, msg2];",
+        "func": "\nmsg.failPercentage = flow.get(\"failCounter\") * 100 / (flow.get(\"failCounter\") + flow.get(\"successCounter\"));\nflow.set(\"successCounter\", 0);\nflow.set(\"failCounter\", 0);\nlet msg1;\nlet msg2;\n\nif(flow.get(\"failThreshold\") <= msg.failPercentage){\n    msg.topic = \"control\";\n    msg.payload = \"close\";\n    msg[\"timeout\"] = flow.get(\"cooldownTime\");\n    msg1 = msg;\n} else {\n    msg.topic = \"control\";\n    msg.payload = flow.get(\"failCounter\");\n    msg2 = msg;\n}\n\n\nreturn [msg1, msg2];",
         "outputs": 2,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 330,
-        "y": 260,
+        "x": 650,
+        "y": 200,
         "wires": [
             [
-                "ee4ef5792d719215"
+                "0366e4dba1bbc8b2"
             ],
             []
         ]
     },
     {
-        "id": "8ca815e0b0c4fa49",
-        "type": "function",
-        "z": "6a18b14ac692588d",
-        "name": "control gate",
-        "func": "\n\n//if threshold is reached and timer is not set, close gate\n\n\n//if timer >limit open gate\n\nif(msg.payload === 1){\n    msg.payload = \"open\";\n}\n\n\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 530,
-        "y": 80,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "ee4ef5792d719215",
-        "type": "mytimeout",
-        "z": "6a18b14ac692588d",
-        "name": "",
-        "outtopic": "",
-        "outsafe": "",
-        "outwarning": "Warning",
-        "outunsafe": "off",
-        "warning": "5",
-        "timer": "30",
-        "debug": false,
-        "ndebug": false,
-        "ignoreCase": false,
-        "repeat": false,
-        "again": false,
-        "x": 170,
-        "y": 80,
-        "wires": [
-            [
-                "8ca815e0b0c4fa49"
-            ],
-            [
-                "8ca815e0b0c4fa49"
-            ]
-        ]
-    },
-    {
-        "id": "0a43a581d998a447",
-        "type": "change",
-        "z": "6a18b14ac692588d",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "cooldownTime",
-                "pt": "flow",
-                "to": "cooldownTime",
-                "tot": "env"
-            },
-            {
-                "t": "set",
-                "p": "failThreshold",
-                "pt": "flow",
-                "to": "failThreshold",
-                "tot": "env"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 300,
-        "y": 460,
-        "wires": [
-            [
-                "017813ac4a6da350"
-            ]
-        ]
-    },
-    {
-        "id": "a5d06bef1fad6138",
-        "type": "http request",
-        "z": "f26674e79407a245",
-        "name": "",
-        "method": "GET",
-        "ret": "txt",
-        "paytoqs": "body",
-        "url": "",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "authType": "",
-        "senderr": false,
-        "x": 1070,
-        "y": 600,
-        "wires": [
-            [
-                "9dfc7125add15d6e"
-            ]
-        ]
-    },
-    {
-        "id": "401403062a1c540b",
+        "id": "29327a84206f99a7",
         "type": "inject",
-        "z": "f26674e79407a245",
-        "name": "cars on craigslist",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "5",
-        "crontab": "",
-        "once": false,
-        "onceDelay": "",
-        "topic": "",
-        "payload": "http://vancouver.craigslist.org/search/sss?format=rss&query=cars",
-        "payloadType": "str",
-        "x": 130,
-        "y": 600,
-        "wires": [
-            [
-                "bf4de27da5cc18e7"
-            ]
-        ]
-    },
-    {
-        "id": "bf4de27da5cc18e7",
-        "type": "change",
-        "z": "f26674e79407a245",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "url",
-                "pt": "msg",
-                "to": "payload",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 470,
-        "y": 600,
-        "wires": [
-            [
-                "97b9187c37d48203"
-            ]
-        ]
-    },
-    {
-        "id": "9dfc7125add15d6e",
-        "type": "function",
-        "z": "f26674e79407a245",
-        "name": "counter of failures",
-        "func": "\n/*if(typeof flow.get(\"successCounter\") === \"undefined\"){\n    flow.set(\"successCounter\", 0);\n}\n\nif(typeof flow.get(\"failCounter\") === \"undefined\"){\n    flow.set(\"failCounter\", 0);\n}*/\n\nif(msg.statusCode === 403){\n    if(flow.get(\"failCounter\")){\n        flow.set(\"failCounter\", flow.get(\"failCounter\") + 1)\n    } else {\n        flow.set(\"failCounter\", 1);\n    }\n} else {\n    if(flow.get(\"successCounter\")){\n        flow.set(\"successCounter\", flow.get(\"successCounter\") + 1);\n    } else {\n        flow.set(\"successCounter\", 1);\n    }\n}\n\nmsg.payload = flow.get(\"failCounter\");\n\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 1090,
-        "y": 520,
-        "wires": [
-            [
-                "0f70d42eeed45d53"
-            ]
-        ]
-    },
-    {
-        "id": "97b9187c37d48203",
-        "type": "q-gate",
-        "z": "f26674e79407a245",
-        "name": "",
-        "controlTopic": "control",
-        "defaultState": "open",
-        "openCmd": "open",
-        "closeCmd": "close",
-        "toggleCmd": "toggle",
-        "queueCmd": "queue",
-        "defaultCmd": "default",
-        "triggerCmd": "trigger",
-        "flushCmd": "flush",
-        "resetCmd": "reset",
-        "peekCmd": "peek",
-        "dropCmd": "drop",
-        "statusCmd": "status",
-        "maxQueueLength": "100",
-        "keepNewest": false,
-        "qToggle": false,
-        "persist": false,
-        "storeName": "memory",
-        "x": 690,
-        "y": 680,
-        "wires": [
-            [
-                "2d64e162ac762780"
-            ]
-        ]
-    },
-    {
-        "id": "2b30a2f2cbaa599e",
-        "type": "inject",
-        "z": "f26674e79407a245",
+        "z": "684766f6b176af89",
         "name": "PERIODIC CHECK",
         "props": [
             {
@@ -315,113 +94,77 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 260,
-        "y": 940,
+        "x": 140,
+        "y": 300,
         "wires": [
             [
-                "56d084adfd46da1e"
+                "56b259b5dbb88083"
             ]
         ]
     },
     {
-        "id": "da1e935fe9b0f698",
-        "type": "debug",
-        "z": "f26674e79407a245",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 730,
-        "y": 820,
-        "wires": []
-    },
-    {
-        "id": "2d64e162ac762780",
+        "id": "68511cac815a3cd3",
         "type": "function",
-        "z": "f26674e79407a245",
-        "name": "",
-        "func": "\nif(!msg.url){\n    return;\n}\n\nreturn msg;",
+        "z": "684766f6b176af89",
+        "name": "control gate",
+        "func": "\n\n//if threshold is reached and timer is not set, close gate\n\n\n//if timer >limit open gate\n\nif(msg.payload === 1){\n    msg.payload = \"open\";\n}\n\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 900,
-        "y": 660,
+        "x": 810,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0366e4dba1bbc8b2",
+        "type": "mytimeout",
+        "z": "684766f6b176af89",
+        "name": "",
+        "outtopic": "",
+        "outsafe": "",
+        "outwarning": "Warning",
+        "outunsafe": "off",
+        "warning": "5",
+        "timer": "30",
+        "debug": false,
+        "ndebug": false,
+        "ignoreCase": false,
+        "repeat": false,
+        "again": false,
+        "x": 450,
+        "y": 80,
         "wires": [
             [
-                "a5d06bef1fad6138"
+                "68511cac815a3cd3"
+            ],
+            [
+                "68511cac815a3cd3"
             ]
         ]
     },
     {
-        "id": "0f70d42eeed45d53",
-        "type": "debug",
-        "z": "f26674e79407a245",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1290,
-        "y": 640,
-        "wires": []
-    },
-    {
-        "id": "775db1d7e7eb6351",
-        "type": "subflow:6a18b14ac692588d",
-        "z": "f26674e79407a245",
-        "name": "",
-        "env": [
-            {
-                "name": "cooldownTime",
-                "value": "10",
-                "type": "env"
-            }
-        ],
-        "x": 190,
-        "y": 720,
-        "wires": [
-            [
-                "97b9187c37d48203"
-            ],
-            [
-                "9bb2b93ae1440164"
-            ],
-            [
-                "da1e935fe9b0f698",
-                "97b9187c37d48203"
-            ]
-        ]
-    },
-    {
-        "id": "56d084adfd46da1e",
+        "id": "56b259b5dbb88083",
         "type": "change",
-        "z": "f26674e79407a245",
+        "z": "684766f6b176af89",
         "name": "",
         "rules": [
             {
                 "t": "set",
-                "p": "successCounter",
-                "pt": "msg",
-                "to": "successCounter",
-                "tot": "flow"
+                "p": "cooldownTime",
+                "pt": "flow",
+                "to": "cooldownTime",
+                "tot": "env"
             },
             {
                 "t": "set",
-                "p": "failCounter",
-                "pt": "msg",
-                "to": "failCounter",
-                "tot": "flow"
+                "p": "failThreshold",
+                "pt": "flow",
+                "to": "failThreshold",
+                "tot": "env"
             }
         ],
         "action": "",
@@ -429,30 +172,158 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 340,
-        "y": 840,
+        "x": 360,
+        "y": 240,
         "wires": [
             [
-                "775db1d7e7eb6351"
+                "373fac3af2b6fa87"
             ]
         ]
     },
     {
-        "id": "9bb2b93ae1440164",
-        "type": "function",
-        "z": "f26674e79407a245",
+        "id": "cd48aa9385503fc7",
+        "type": "http request",
+        "z": "d0ac6a57ffe6a2b7",
         "name": "",
-        "func": "\nflow.set(\"successCounter\", 0);\nflow.set(\"failCounter\", 0);\n\nreturn msg;",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "x": 1090,
+        "y": 1060,
+        "wires": [
+            [
+                "5b2457fbc49888e0"
+            ]
+        ]
+    },
+    {
+        "id": "7e9ed23f047ea5ac",
+        "type": "inject",
+        "z": "d0ac6a57ffe6a2b7",
+        "name": "cars on craigslist",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "http://vancouver.craigslist.org/search/sss?format=rss&query=cars",
+        "payloadType": "str",
+        "x": 370,
+        "y": 1060,
+        "wires": [
+            [
+                "0d50e4c7a49c2f34"
+            ]
+        ]
+    },
+    {
+        "id": "0d50e4c7a49c2f34",
+        "type": "change",
+        "z": "d0ac6a57ffe6a2b7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 1060,
+        "wires": [
+            [
+                "23c0abdaf4aeeac2"
+            ]
+        ]
+    },
+    {
+        "id": "5b2457fbc49888e0",
+        "type": "function",
+        "z": "d0ac6a57ffe6a2b7",
+        "name": "counter of failures",
+        "func": "\nif(msg.statusCode === 403){\n    if(flow.get(\"failCounter\")){\n        flow.set(\"failCounter\", flow.get(\"failCounter\") + 1)\n    } else {\n        flow.set(\"failCounter\", 1);\n    }\n} else {\n    if(flow.get(\"successCounter\")){\n        flow.set(\"successCounter\", flow.get(\"successCounter\") + 1);\n    } else {\n        flow.set(\"successCounter\", 1);\n    }\n}\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
+        "x": 1330,
+        "y": 1060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d765827ece6f2813",
+        "type": "subflow:684766f6b176af89",
+        "z": "d0ac6a57ffe6a2b7",
+        "name": "",
+        "env": [
+            {
+                "name": "cooldownTime",
+                "value": "10",
+                "type": "num"
+            }
+        ],
         "x": 500,
-        "y": 740,
+        "y": 1240,
         "wires": [
             [
-                "97b9187c37d48203"
+                "23c0abdaf4aeeac2"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "23c0abdaf4aeeac2",
+        "type": "q-gate",
+        "z": "d0ac6a57ffe6a2b7",
+        "name": "",
+        "controlTopic": "control",
+        "defaultState": "open",
+        "openCmd": "open",
+        "closeCmd": "close",
+        "toggleCmd": "toggle",
+        "queueCmd": "queue",
+        "defaultCmd": "default",
+        "triggerCmd": "trigger",
+        "flushCmd": "flush",
+        "resetCmd": "reset",
+        "peekCmd": "peek",
+        "dropCmd": "drop",
+        "statusCmd": "status",
+        "maxQueueLength": "100",
+        "keepNewest": false,
+        "qToggle": false,
+        "persist": false,
+        "storeName": "memory",
+        "x": 850,
+        "y": 1060,
+        "wires": [
+            [
+                "cd48aa9385503fc7"
             ]
         ]
     }
